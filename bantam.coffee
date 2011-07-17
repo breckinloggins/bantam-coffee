@@ -83,14 +83,14 @@ class Parser
     parseExpression: (precedence = 0) ->
         token = @consume()
         prefix = @prefixParselets[token.type.name]
-        throw "Could not parse \"#{token}\"." if not prefix?
+        throw new Error "Could not parse \"#{token}\"." if not prefix?
         
         left = prefix.parse this, token
         while precedence < @getPrecedence()
             token = @consume()
             
             infix = @infixParselets[token.type.name]
-            throw "Could not parse \"#{token}\"." if not infix?
+            throw new Error "Could not parse \"#{token}\"." if not infix?
             left = infix.parse this, left, token
 
         left
@@ -104,7 +104,7 @@ class Parser
     consume: (expected = null) ->
         # Make sure we actually read the token
         token = @lookAhead()
-        throw "Expected #{expected.name} but got \"#{token}\"" if expected? and token.type isnt expected
+        throw new Error "Expected #{expected.name} but got \"#{token}\"" if expected? and token.type isnt expected
         @read.pop()
         token
 
@@ -168,7 +168,7 @@ class AssignParselet extends InfixParselet
         @precedence = Precedence.ASSIGNMENT
 
     parse: (parser, left, token) ->
-        throw "The left-hand side of an assignment must be a name." if not (left instanceof NameExpression)
+        throw new Error "The left-hand side of an assignment must be a name." if not (left instanceof NameExpression)
         right = parser.parseExpression Precedence.ASSIGNMENT - 1
 
         new AssignExpression left.name, right
@@ -314,8 +314,11 @@ REPL
 stdin = process.openStdin()
 console.log "Type Ctrl+D or Ctrl+C to exit"
 stdin.on 'data', (chunk) ->
-    expr = new BantamParser(new Lexer(chunk.toString())).parseExpression()
-    w = new Writer
-    expr.compile w
-    console.log w.code
+    try
+        expr = new BantamParser(new Lexer(chunk.toString())).parseExpression()
+        w = new Writer
+        expr.compile w
+        console.log w.code
+    catch e
+        console.log "Syntax error: #{e}"
 
