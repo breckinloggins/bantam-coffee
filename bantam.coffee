@@ -1,27 +1,25 @@
 ###
 TOKENS
 ###
-TokenType = {}
+TokenType =
+    LEFT_PAREN:         -> '('
+    RIGHT_PAREN:        -> ')'
+    COMMA:              -> ','
+    ASSIGN:             -> '='
+    PLUS:               -> '+'
+    MINUS:              -> '-'
+    ASTERISK:           -> '*'
+    SLASH:              -> '/'
+    CARET:              -> '^'
+    TILDE:              -> '~'
+    BANG:               -> '!'
+    QUESTION:           -> '?'
+    COLON:              -> ':'
+    NAME:               -> @text
+    EOF:                -> null
 
-registerToken = (name, fn) ->
-    TokenType[name] = {name:name, text:fn}
-    
-    
-registerToken "LEFT_PAREN",     -> '('
-registerToken "RIGHT_PAREN",    -> ')'
-registerToken "COMMA",          -> ','
-registerToken "ASSIGN",         -> '='
-registerToken "PLUS",           -> '+'
-registerToken "MINUS",          -> '-'
-registerToken "ASTERISK",       -> '*'
-registerToken "SLASH",          -> '/'
-registerToken "CARET",          -> '^'
-registerToken "TILDE",          -> '~'
-registerToken "BANG",           -> '!'
-registerToken "QUESTION",       -> '?'
-registerToken "COLON",          -> ':'
-registerToken "NAME",           -> @text
-registerToken "EOF",            -> null
+
+TokenType[name] = {name:name, text:fn} for name, fn of TokenType
 
 class Token
     constructor: (@type, @text = "") ->
