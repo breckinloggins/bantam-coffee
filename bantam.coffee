@@ -90,6 +90,7 @@ class Parser
             token = @consume()
             
             infix = @infixParselets[token.type.name]
+            throw "Could not parse \"#{token}\"." if not infix?
             left = infix.parse this, left, token
 
         left
@@ -188,7 +189,7 @@ class BinaryOperatorParselet extends InfixParselet
 
     parse: (parser, left, token) ->
         right = parser.parseExpression @precedence - (if @isRight then 1 else 0)
-        
+       
         new OperatorExpression(left, @type, right)
 
 class PostfixOperatorParselet extends InfixParselet
@@ -210,12 +211,13 @@ class CallParselet extends InfixParselet
 
     parse: (parser, left, token) ->
         args = []
-        until parser.match TokenType.RIGHT_PAREN
-            args.push parser.parseExpression()
-            break unless parser.match TokenType.COMMA
         
-        parser.match TokenType.RIGHT_PAREN
-        
+        unless parser.match TokenType.RIGHT_PAREN
+            loop
+                args.push parser.parseExpression()
+                break if not parser.match TokenType.COMMA
+            parser.match TokenType.RIGHT_PAREN
+
         new CallExpression left, args
 
 class GroupParselet extends PrefixParselet
@@ -298,7 +300,7 @@ class CallExpression extends Expression
     constructor: (@function, @args) ->
 
     compile: (writer) ->
-        writer.code += @function.compile writer
+        @function.compile writer
         writer.code += "("
         for arg, i in @args
             arg.compile writer
